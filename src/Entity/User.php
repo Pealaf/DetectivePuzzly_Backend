@@ -8,6 +8,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
@@ -17,24 +18,29 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(["getUsers", "getEnigmes"])]
     private ?int $id = null;
 
     #[ORM\Column(length: 180)]
+    #[Groups(["getUsers", "getEnigmes"])]
     private ?string $login = null;
 
     /**
      * @var list<string> The user roles
      */
     #[ORM\Column]
+    #[Groups(["getUsers", "getEnigmes"])]
     private array $roles = [];
 
     /**
      * @var string The hashed password
      */
     #[ORM\Column]
+    #[Groups(["getUsers"])]
     private ?string $password = null;
 
     #[ORM\OneToMany(targetEntity: Enigme::class, mappedBy: 'utilisateur')]
+    #[Groups(["getUsers"])]
     private Collection $enigmes;
 
     public function __construct()

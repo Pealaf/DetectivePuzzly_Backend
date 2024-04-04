@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\EnigmeRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: EnigmeRepository::class)]
 class Enigme
@@ -11,18 +12,23 @@ class Enigme
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(["getUsers", "getEnigmes"])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(["getUsers", "getEnigmes"])]
     private ?string $intitule = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(["getUsers", "getEnigmes"])]
     private ?string $solution = null;
 
     #[ORM\Column]
+    #[Groups(["getUsers", "getEnigmes"])]
     private ?bool $resolue = null;
 
     #[ORM\ManyToOne(inversedBy: 'enigmes')]
+    #[Groups(["getEnigmes"])]
     private ?User $utilisateur = null;
 
     public function getId(): ?int

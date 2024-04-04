@@ -21,7 +21,7 @@ class UserController extends AbstractController
     public function getAllUsers(UserRepository $userRepository, SerializerInterface $serializer): JsonResponse
     {
         $users = $userRepository->findAll();
-        $jsonUsers = $serializer->serialize($users, 'json'/*, ['groups' => 'getBooks']*/);
+        $jsonUsers = $serializer->serialize($users, 'json', ['groups' => 'getUsers']);
         return new JsonResponse($jsonUsers, Response::HTTP_OK, [], true);
 
         /*return $this->json([
@@ -33,8 +33,15 @@ class UserController extends AbstractController
     #[Route('/api/users/{id}', name: 'detailUser', methods: ['GET'])]
     public function getDetailUser(User $user, SerializerInterface $serializer): JsonResponse
     {
-        $jsonUser = $serializer->serialize($user, 'json'/*, ['groups' => 'getBooks']*/);
+        $jsonUser = $serializer->serialize($user, 'json', ['groups' => 'getUsers']);
         return new JsonResponse($jsonUser, Response::HTTP_OK, [], true);
+    }
+
+    #[Route('/api/users/login/{login}', name: 'userByLogin', methods: ['GET'])]
+    public function getUserByLogin(Request $request, SerializerInterface $serializer, UserRepository $userRepository): JsonResponse
+    {
+        $login = $request->get('login');
+        return $userRepository->getUserByLogin($login, $serializer);
     }
 
     #[Route('/api/users/{id}', name: 'deleteUser', methods: ['DELETE'])]
@@ -56,7 +63,7 @@ class UserController extends AbstractController
         $em->persist($user);
         $em->flush();
 
-        $jsonUser = $serializer->serialize($user, 'json'/*, ['groups' => 'getBooks']*/);
+        $jsonUser = $serializer->serialize($user, 'json', ['groups' => 'getUsers']);
 
         $location = $urlGenerator->generate('detailUser', ['id' => $user->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
 

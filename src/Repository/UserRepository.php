@@ -5,9 +5,12 @@ namespace App\Repository;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\PasswordUpgraderInterface;
+use Symfony\Component\Serializer\SerializerInterface;
 
 /**
  * @extends ServiceEntityRepository<User>
@@ -36,6 +39,25 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $user->setPassword($newHashedPassword);
         $this->getEntityManager()->persist($user);
         $this->getEntityManager()->flush();
+    }
+
+    /**
+     * Used to know if a login is used.
+     */
+    public function getUserByLogin(String $login, SerializerInterface $serializer): JsonResponse
+    {
+        if ($login == null) {
+            throw new UnsupportedUserException(sprintf('Login invalide'));
+        }
+        $user = $this->getEntityManager()->getRepository(User::class)->findOneBy(['login' => $login]);
+
+        // Vérifie si le user existe
+        if (!$user) {
+            // Retourne une réponse HTTP 404 si le user n'est pas trouvé
+            return new JsonResponse(null, Response::HTTP_NOT_FOUND);
+        }
+        $jsonUser = $serializer->serialize($user, 'json'/*, ['groups' => 'getBooks']*/);
+        return new JsonResponse($jsonUser, Response::HTTP_OK, [], true);
     }
 
     //    /**
