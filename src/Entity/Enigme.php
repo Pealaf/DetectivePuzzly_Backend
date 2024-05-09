@@ -31,6 +31,18 @@ class Enigme
     #[Groups(["getEnigmes"])]
     private ?User $utilisateur = null;
 
+    #[ORM\Column(length: 255)]
+    private ?string $reponse_a = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $reponse_b = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $reponse_c = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $reponse_d = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -80,6 +92,54 @@ class Enigme
     public function setUtilisateur(?User $utilisateur): static
     {
         $this->utilisateur = $utilisateur;
+
+        return $this;
+    }
+
+    public function getReponseA(): ?string
+    {
+        return $this->reponse_a;
+    }
+
+    public function setReponseA(string $reponse_a): static
+    {
+        $this->reponse_a = $reponse_a;
+
+        return $this;
+    }
+
+    public function getReponseB(): ?string
+    {
+        return $this->reponse_b;
+    }
+
+    public function setReponseB(string $reponse_b): static
+    {
+        $this->reponse_b = $reponse_b;
+
+        return $this;
+    }
+
+    public function getReponseC(): ?string
+    {
+        return $this->reponse_c;
+    }
+
+    public function setReponseC(string $reponse_c): static
+    {
+        $this->reponse_c = $reponse_c;
+
+        return $this;
+    }
+
+    public function getReponseD(): ?string
+    {
+        return $this->reponse_d;
+    }
+
+    public function setReponseD(string $reponse_d): static
+    {
+        $this->reponse_d = $reponse_d;
 
         return $this;
     }
