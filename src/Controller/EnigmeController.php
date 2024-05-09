@@ -14,6 +14,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class EnigmeController extends AbstractController
 {
@@ -23,11 +24,6 @@ class EnigmeController extends AbstractController
         $enigmes = $enigmeRepository->findAll();
         $jsonEnigmes = $serializer->serialize($enigmes, 'json'/*, ['groups' => 'getBooks']*/);
         return new JsonResponse($jsonEnigmes, Response::HTTP_OK, [], true);
-
-        /*return $this->json([
-            'message' => 'Welcome to your new controller!',
-            'path' => 'src/Controller/EnigmeController2.php',
-        ]);*/
     }
 
     #[Route('/api/enigmes/{id}', name: 'detailEnigme', methods: ['GET'])]
@@ -37,21 +33,17 @@ class EnigmeController extends AbstractController
         return new JsonResponse($jsonEnigme, Response::HTTP_OK, [], true);
     }
 
-
-
     #[Route('/api/enigmes/{id}', name: 'deleteEnigme', methods: ['DELETE'])]
     public function deleteEnigme(Enigme $enigme, EntityManagerInterface $em): JsonResponse
     {
         $em->remove($enigme);
         $em->flush();
-
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }
 
     #[Route('/api/enigmes', name:"createEnigme", methods: ['POST'])]
     public function createEnigme(Request $request, SerializerInterface $serializer, EntityManagerInterface $em, UrlGeneratorInterface $urlGenerator): JsonResponse
     {
-
         $enigme = $serializer->deserialize($request->getContent(), Enigme::class, 'json');
         $em->persist($enigme);
         $em->flush();
@@ -63,30 +55,17 @@ class EnigmeController extends AbstractController
         return new JsonResponse($jsonEnigme, Response::HTTP_CREATED, ["Location" => $location], true);
     }
 
-    /*#[Route('/api/enigmes', name:"createEnigme", methods: ['POST'])]
-    public function createEnigme(Request $request, SerializerInterface $serializer, EntityManagerInterface $em, UrlGeneratorInterface $urlGenerator, UserRepository $userRepository): JsonResponse
+    private function createEnigmeFromObject(Enigme $enigme, SerializerInterface $serializer, EntityManagerInterface $em, UrlGeneratorInterface $urlGenerator): JsonResponse
     {
-        $enigme = $serializer->deserialize($request->getContent(), Enigme::class, 'json');
-
-        // Récupération de l'ensemble des données envoyées sous forme de tableau
-        $content = $request->toArray();
-
-        // Récupération de l'idAuthor. S'il n'est pas défini, alors on met -1 par défaut.
-        $idAuthor = $content['idAuthor'] ?? -1;
-
-        // On cherche l'auteur qui correspond et on l'assigne au livre.
-        // Si "find" ne trouve pas l'auteur, alors null sera retourné.
-        $enigme->setAuthor($userRepository->find($idAuthor));
-
         $em->persist($enigme);
         $em->flush();
 
-        $jsonEnigme = $serializer->serialize($enigme, 'json', ['groups' => 'getBooks']);
+        $jsonEnigme = $serializer->serialize($enigme, 'json', ['groups' => 'getEnigmes']);
 
-        $location = $urlGenerator->generate('detailBook', ['id' => $enigme->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
+        $location = $urlGenerator->generate('detailEnigme', ['id' => $enigme->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
 
         return new JsonResponse($jsonEnigme, Response::HTTP_CREATED, ["Location" => $location], true);
-    }*/
+    }
 
     #[Route('/api/enigmes/{id}', name:"updateEnigme", methods:['PUT'])]
     public function updateEnigme(Request $request, SerializerInterface $serializer, Enigme $currentEnigme, EntityManagerInterface $em, UserRepository $userRepository): JsonResponse
@@ -102,5 +81,28 @@ class EnigmeController extends AbstractController
         $em->persist($updatedEnigme);
         $em->flush();
         return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/api/enigmes/generate/{idUser}', name: 'generateEnigme', methods: ['GET'])]
+    public function generateEnigme(Request $request, SerializerInterface $serializer, EntityManagerInterface $em, UrlGeneratorInterface $urlGenerator, EnigmeRepository $enigmeRepository, UserRepository $userRepository, HttpClientInterface $httpClient): JsonResponse
+    {
+        // Récupération de l'utilisateur
+        $user = $userRepository-> find($request->get('idUser'));
+        // Génération de l'énigme
+        $newEnigmeGenerated = json_decode($enigmeRepository->genererEnigme($httpClient)->getContent());
+        // Création de l'objet Enigme
+        $newEnigme = new Enigme();
+        $newEnigme -> setIntitule($newEnigmeGenerated->enigme);
+        $newEnigme -> setReponseA($newEnigmeGenerated->options[0]);
+        $newEnigme -> setReponseB($newEnigmeGenerated->options[1]);
+        $newEnigme -> setReponseC($newEnigmeGenerated->options[2]);
+        $newEnigme -> setReponseD($newEnigmeGenerated->options[3]);
+        $newEnigme -> setSolution($newEnigmeGenerated->reponse_correcte);
+        $newEnigme -> setUtilisateur($user);
+        $newEnigme -> setResolue(false);
+        // Création de l'énigme en BDD
+        $jsonResponse = $this -> createEnigmeFromObject($newEnigme, $serializer, $em, $urlGenerator);
+
+        return new JsonResponse(json_decode($jsonResponse -> getContent()), JsonResponse::HTTP_OK);
     }
 }

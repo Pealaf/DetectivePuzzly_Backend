@@ -32,15 +32,19 @@ class Enigme
     private ?User $utilisateur = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(["getUsers", "getEnigmes"])]
     private ?string $reponse_a = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(["getUsers", "getEnigmes"])]
     private ?string $reponse_b = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(["getUsers", "getEnigmes"])]
     private ?string $reponse_c = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(["getUsers", "getEnigmes"])]
     private ?string $reponse_d = null;
 
     public function getId(): ?int

@@ -2,17 +2,16 @@
 
 namespace App\Repository;
 
+use App\Controller\OpenAiApiController;
 use App\Entity\Enigme;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**
  * @extends ServiceEntityRepository<Enigme>
- *
- * @method Enigme|null find($id, $lockMode = null, $lockVersion = null)
- * @method Enigme|null findOneBy(array $criteria, array $orderBy = null)
- * @method Enigme[]    findAll()
- * @method Enigme[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
 class EnigmeRepository extends ServiceEntityRepository
 {
@@ -21,28 +20,18 @@ class EnigmeRepository extends ServiceEntityRepository
         parent::__construct($registry, Enigme::class);
     }
 
-//    /**
-//     * @return Enigme[] Returns an array of Enigme objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('e')
-//            ->andWhere('e.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('e.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
+    /**
+     * Used to generate an enigme with ChatGPT
+     */
+    public function genererEnigme(HttpClientInterface $httpClient): JsonResponse
+    {
+        // Création du contrôleur de l'API
+        $openAiApiController = new OpenAiApiController();
+        // Génération d'une énigme
+        $jsonResponse = $openAiApiController->genererEnigme($httpClient);
+        // Traitement de la réponse
+        $nouvelleEnigme = json_decode($jsonResponse->getContent())->choices[0]->message->content;
 
-//    public function findOneBySomeField($value): ?Enigme
-//    {
-//        return $this->createQueryBuilder('e')
-//            ->andWhere('e.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
+        return new JsonResponse($nouvelleEnigme, Response::HTTP_OK, [], true);
+    }
 }
