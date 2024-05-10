@@ -22,7 +22,7 @@ class EnigmeController extends AbstractController
     public function getAllEnigmes(EnigmeRepository $enigmeRepository, SerializerInterface $serializer): JsonResponse
     {
         $enigmes = $enigmeRepository->findAll();
-        $jsonEnigmes = $serializer->serialize($enigmes, 'json'/*, ['groups' => 'getBooks']*/);
+        $jsonEnigmes = $serializer->serialize($enigmes, 'json', ['groups' => 'getEnigmes']);
         return new JsonResponse($jsonEnigmes, Response::HTTP_OK, [], true);
     }
 
@@ -104,5 +104,14 @@ class EnigmeController extends AbstractController
         $jsonResponse = $this -> createEnigmeFromObject($newEnigme, $serializer, $em, $urlGenerator);
 
         return new JsonResponse(json_decode($jsonResponse -> getContent()), JsonResponse::HTTP_OK);
+    }
+
+    #[Route('/api/enigmes/nonResolues/{idUser}', name: 'getAllEnigmesNonResoluesByUser', methods: ['GET'])]
+    public function getAllEnigmesNonResoluesByUser(Request $request, SerializerInterface $serializer, EnigmeRepository $enigmeRepository, UserRepository $userRepository): JsonResponse
+    {
+        // Récupération de l'utilisateur
+        $user = $userRepository-> find($request->get('idUser'));
+
+        return $enigmeRepository->getEnigmesNonResoluesByUser($user, $serializer);
     }
 }

@@ -4,10 +4,12 @@ namespace App\Repository;
 
 use App\Controller\OpenAiApiController;
 use App\Entity\Enigme;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**
@@ -33,5 +35,15 @@ class EnigmeRepository extends ServiceEntityRepository
         $nouvelleEnigme = json_decode($jsonResponse->getContent())->choices[0]->message->content;
 
         return new JsonResponse($nouvelleEnigme, Response::HTTP_OK, [], true);
+    }
+
+    /**
+     * Méthode permettant de récupérer les énigmes non résolues d'un utilisateur
+     */
+    public function getEnigmesNonResoluesByUser(User $user, SerializerInterface $serializer): JsonResponse
+    {
+        $enigmes = $this->getEntityManager()->getRepository(Enigme::class)->findBy(['utilisateur' => $user, 'resolue' => false]);
+        $jsonEnigmes = $serializer->serialize($enigmes, 'json', ['groups' => 'getEnigmes']);
+        return new JsonResponse($jsonEnigmes, Response::HTTP_OK, [], true);
     }
 }
