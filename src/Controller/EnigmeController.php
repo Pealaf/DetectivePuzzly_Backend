@@ -76,11 +76,13 @@ class EnigmeController extends AbstractController
             [AbstractNormalizer::OBJECT_TO_POPULATE => $currentEnigme]);
         $content = $request->toArray();
         $user = $content['utilisateur'] ?? -1;
-        $updatedEnigme->setAuthor($userRepository->find($user));
+        $updatedEnigme->setUtilisateur($userRepository->find($user['id']));
 
         $em->persist($updatedEnigme);
         $em->flush();
-        return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT);
+
+        $jsonUpdatedEnigme = $serializer->serialize($updatedEnigme, 'json', ['groups' => 'getEnigmes']);
+        return new JsonResponse($jsonUpdatedEnigme, JsonResponse::HTTP_OK);
     }
 
     #[Route('/api/enigmes/generate/{idUser}', name: 'generateEnigme', methods: ['GET'])]
