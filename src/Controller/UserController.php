@@ -85,4 +85,11 @@ class UserController extends AbstractController
         $em->flush();
         return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT);
     }
+
+    #[Route('/api/users/get/top', name: 'getTopUsers', methods: ['GET'])]
+    public function getTopUsers(EntityManagerInterface $em, UserRepository $userRepository): JsonResponse
+    {
+        $topUsers = $userRepository -> getTopUsers($em);
+        return new JsonResponse($topUsers, JsonResponse::HTTP_OK);
+    }
 }

@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -60,28 +61,22 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         return new JsonResponse($jsonUser, Response::HTTP_OK, [], true);
     }
 
-    //    /**
-    //     * @return User[] Returns an array of User objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('u')
-    //            ->andWhere('u.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('u.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    /**
+     * Méthode permettant de récupérer les 5 meilleurs joueurs
+     * @param EntityManagerInterface $entityManager
+     * @return mixed
+     */
+    public function getTopUsers(EntityManagerInterface $entityManager): mixed
+    {
+        $query = $entityManager->createQuery('
+            SELECT u.login, COUNT(e.id) AS nbEnigmesResolues
+            FROM App\Entity\User u
+            LEFT JOIN App\Entity\Enigme e WITH u.id = e.utilisateur
+            WHERE e.resolue = 1
+            GROUP BY u.id
+            ORDER BY nbEnigmesResolues DESC
+        ')->setMaxResults(5);
 
-    //    public function findOneBySomeField($value): ?User
-    //    {
-    //        return $this->createQueryBuilder('u')
-    //            ->andWhere('u.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+        return $query->getResult();
+    }
 }
