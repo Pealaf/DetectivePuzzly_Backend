@@ -116,4 +116,19 @@ class EnigmeController extends AbstractController
 
         return $enigmeRepository->getEnigmesNonResoluesByUser($user, $serializer);
     }
+
+    #[Route('/api/enigmes/count/{idUser}', name: 'countEnigmesByUser', methods: ['GET'])]
+    public function countEnigmesByUser(Request $request, EnigmeRepository $enigmeRepository): JsonResponse
+    {
+        // Récupération de l'id de l'utilisateur
+        $idUtilisateur = $request->get('idUser');
+
+        $nbEnigmes = $enigmeRepository -> countEnigmesByUtilisateur($idUtilisateur);
+        $nbEnigmesResolues = $enigmeRepository -> countEnigmesResoluesByUtilisateur($idUtilisateur);
+
+        $json["nombreEnigmes"] = $nbEnigmes;
+        $json["nombreEnigmesResolues"] = $nbEnigmesResolues;
+
+        return new JsonResponse($json, JsonResponse::HTTP_OK);
+    }
 }

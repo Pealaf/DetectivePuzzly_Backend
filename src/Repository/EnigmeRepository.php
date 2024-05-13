@@ -46,4 +46,35 @@ class EnigmeRepository extends ServiceEntityRepository
         $jsonEnigmes = $serializer->serialize($enigmes, 'json', ['groups' => 'getEnigmes']);
         return new JsonResponse($jsonEnigmes, Response::HTTP_OK, [], true);
     }
+
+    /**
+     * Méthode permettant de compter le nombre d'énigmes pour un utilisateur
+     * @param int $utilisateurId
+     * @return int nombre d'énigmes
+     */
+    public function countEnigmesByUtilisateur(int $utilisateurId): int
+    {
+        return $this->createQueryBuilder('e')
+            ->select('COUNT(e.id)')
+            ->where('e.utilisateur = :utilisateurId')
+            ->setParameter('utilisateurId', $utilisateurId)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /**
+     * Méthode permettant de retourner le nombre d'énigmes résolues pour un utilisateur
+     * @param int $utilisateurId
+     * @return int nombre d'énigmes résolues
+     */
+    public function countEnigmesResoluesByUtilisateur(int $utilisateurId): int
+    {
+        return $this->createQueryBuilder('e')
+            ->select('COUNT(e.id)')
+            ->where('e.utilisateur = :utilisateurId')
+            ->andWhere('e.resolue = 1')
+            ->setParameter('utilisateurId', $utilisateurId)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
 }
