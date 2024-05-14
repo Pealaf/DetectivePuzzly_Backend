@@ -36,7 +36,8 @@ class OpenAiApiController extends AbstractController
                 ['role' => 'system', 'content' => "Ta réponse doit être un objet json. Cet objet contient un champ 'enigme' pour l'énigme, un champ 'options' qui contient les propositions de réponses et un champ 'reponse_correcte' pour la réponse correcte."],
                 ['role' => 'user', 'content' => "Génère une énigme avec 4 solutions possibles dont 3 fausses et une vraie. Précise quelle est la réponse vraie."]
             ],
-            'max_tokens' => 150
+            'max_tokens' => 600,
+            'temperature' => 1.1
         ]);
 
         try {
