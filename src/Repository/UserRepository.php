@@ -55,7 +55,7 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         // Vérifie si le user existe
         if (!$user) {
             // Retourne une réponse HTTP 404 si le user n'est pas trouvé
-            return new JsonResponse(null, Response::HTTP_NOT_FOUND);
+            return new JsonResponse(null, Response::HTTP_NO_CONTENT);
         }
         $jsonUser = $serializer->serialize($user, 'json', ['groups' => 'getUsers']);
         return new JsonResponse($jsonUser, Response::HTTP_OK, [], true);
