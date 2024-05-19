@@ -23,11 +23,6 @@ class UserController extends AbstractController
         $users = $userRepository->findAll();
         $jsonUsers = $serializer->serialize($users, 'json', ['groups' => 'getUsers']);
         return new JsonResponse($jsonUsers, Response::HTTP_OK, [], true);
-
-        /*return $this->json([
-            'message' => 'Welcome to your new controller!',
-            'path' => 'src/Controller/UserController2.php',
-        ]);*/
     }
 
     #[Route('/api/users/{id}', name: 'detailUser', methods: ['GET'])]
@@ -45,8 +40,11 @@ class UserController extends AbstractController
     }
 
     #[Route('/api/users/{id}', name: 'deleteUser', methods: ['DELETE'])]
-    public function deleteUser(User $user, EntityManagerInterface $em): JsonResponse
+    public function deleteUser(Request $request, EntityManagerInterface $em, UserRepository $userRepository): JsonResponse
     {
+        // Récupération de l'utilisateur
+        $user = $userRepository->find($request->get('id'));
+
         $em->remove($user);
         $em->flush();
 
@@ -84,6 +82,32 @@ class UserController extends AbstractController
         $em->persist($updatedUser);
         $em->flush();
         return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/api/users/updatePassword/{id}', name:"updatePassword", methods:['POST'])]
+    public function updatePassword(Request $request, EntityManagerInterface $em, UserRepository $userRepository, UserPasswordHasherInterface $userPasswordHashed): JsonResponse
+    {
+        // Récupération de l'utilisateur
+        $user = $userRepository->find($request->get('id'));
+        // Récupération des données
+        $data = $request->toArray();
+        $newPassword = $data["newPassword"];
+        $oldPassword = $data["oldPassword"];
+
+        // Vérification de l'ancien mot de passe
+        if (!$userPasswordHashed->isPasswordValid($user, $oldPassword)) {
+            // Si l'ancien mot de passe ne correspond pas, on retourne une erreur
+            return new JsonResponse("", Response::HTTP_INTERNAL_SERVER_ERROR, [], true);
+        }
+
+        // Modification du mot de passe
+        $user->setPassword($newPassword);
+        $user->setPassword($userPasswordHashed->hashPassword($user, $user->getPassword()));
+        // Mise à jour de l'utilisateur
+        $em->persist($user);
+        $em->flush();
+
+        return new JsonResponse("", Response::HTTP_OK, [], true);
     }
 
     #[Route('/api/users/get/top', name: 'getTopUsers', methods: ['GET'])]
