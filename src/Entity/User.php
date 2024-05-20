@@ -39,7 +39,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Groups(["getUsers"])]
     private ?string $password = null;
 
-    #[ORM\OneToMany(targetEntity: Enigme::class, mappedBy: 'utilisateur')]
+    #[ORM\OneToMany(targetEntity: Enigme::class, mappedBy: 'utilisateur', cascade: ['remove'])]
     #[Groups(["getUsers"])]
     private Collection $enigmes;
 

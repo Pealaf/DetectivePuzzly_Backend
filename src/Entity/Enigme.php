@@ -28,6 +28,7 @@ class Enigme
     private ?bool $resolue = null;
 
     #[ORM\ManyToOne(inversedBy: 'enigmes')]
+    #[ORM\JoinColumn(onDelete: 'CASCADE')]
     #[Groups(["getEnigmes"])]
     private ?User $utilisateur = null;
 
