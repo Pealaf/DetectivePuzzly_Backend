@@ -95,11 +95,47 @@ class EnigmeController extends AbstractController
         // Création de l'objet Enigme
         $newEnigme = new Enigme();
         $newEnigme -> setIntitule($newEnigmeGenerated->enigme);
-        $newEnigme -> setReponseA($newEnigmeGenerated->options[0]);
-        $newEnigme -> setReponseB($newEnigmeGenerated->options[1]);
-        $newEnigme -> setReponseC($newEnigmeGenerated->options[2]);
-        $newEnigme -> setReponseD($newEnigmeGenerated->options[3]);
-        $newEnigme -> setSolution($newEnigmeGenerated->reponse_correcte);
+        if (is_array($newEnigmeGenerated->options)) {
+            $newEnigme -> setReponseA($newEnigmeGenerated->options[0]);
+            $newEnigme -> setReponseB($newEnigmeGenerated->options[1]);
+            $newEnigme -> setReponseC($newEnigmeGenerated->options[2]);
+            $newEnigme -> setReponseD($newEnigmeGenerated->options[3]);
+
+            $newEnigme -> setSolution($newEnigmeGenerated->reponse_correcte);
+        } else if (is_object($newEnigmeGenerated->options)) {
+            if (property_exists($newEnigmeGenerated->options, 'A')) {
+                $reponseA = $newEnigmeGenerated->options->A;
+                $reponseB = $newEnigmeGenerated->options->B;
+                $reponseC = $newEnigmeGenerated->options->C;
+                $reponseD = $newEnigmeGenerated->options->D;
+            } else if (property_exists($newEnigmeGenerated->options, 'a')) {
+                $reponseA = $newEnigmeGenerated->options->a;
+                $reponseB = $newEnigmeGenerated->options->b;
+                $reponseC = $newEnigmeGenerated->options->c;
+                $reponseD = $newEnigmeGenerated->options->d;
+            } else {
+                return new JsonResponse("", JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
+            }
+
+            $newEnigme -> setReponseA($reponseA);
+            $newEnigme -> setReponseB($reponseB);
+            $newEnigme -> setReponseC($reponseC);
+            $newEnigme -> setReponseD($reponseD);
+
+            $reponseCorrecte = $newEnigmeGenerated->reponse_correcte;
+            if ($reponseCorrecte === "A" || $reponseCorrecte === "a") {
+                $newEnigme -> setSolution($reponseA);
+            } else if ($reponseCorrecte === "B" || $reponseCorrecte === "b") {
+                $newEnigme -> setSolution($reponseB);
+            } else if ($reponseCorrecte === "C" || $reponseCorrecte === "c") {
+                $newEnigme -> setSolution($reponseC);
+            } else if ($reponseCorrecte === "D" || $reponseCorrecte === "d") {
+                $newEnigme -> setSolution($reponseD);
+            }
+        } else {
+            return new JsonResponse("", JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
+        }
+
         $newEnigme -> setUtilisateur($user);
         $newEnigme -> setResolue(false);
         // Création de l'énigme en BDD

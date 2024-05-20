@@ -91,7 +91,7 @@ class OpenAiApiController extends AbstractController
         $theme = $this -> themes[$this->genererNombreAleatoire()];
 
         $body = json_encode([
-            'model' => 'gpt-4-turbo',
+            'model' => 'gpt-4o',
             'messages' => [
                 ['role' => 'system', 'content' => "Ta réponse doit être un objet json. Cet objet contient un champ 'enigme' pour l'énigme, un champ 'options' qui contient les propositions de réponses et un champ 'reponse_correcte' pour la réponse correcte."],
                 ['role' => 'user', 'content' => "Génère une énigme sur " . $theme . " avec 4 solutions possibles dont 3 fausses et une vraie. Précise quelle est la réponse vraie."]
