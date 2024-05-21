@@ -114,7 +114,7 @@ class EnigmeController extends AbstractController
                 $reponseC = $newEnigmeGenerated->options->c;
                 $reponseD = $newEnigmeGenerated->options->d;
             } else {
-                return new JsonResponse("", JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
+                return new JsonResponse("", JsonResponse::HTTP_NO_CONTENT);
             }
 
             $newEnigme -> setReponseA($reponseA);
